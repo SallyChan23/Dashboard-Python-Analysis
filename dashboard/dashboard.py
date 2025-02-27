@@ -7,7 +7,7 @@ sns.set(style='dark')
 
 st.title('Dashboard Penyewaan Sepeda')
 
-all_df = pd.read_csv('all_data.csv')
+all_df = pd.read_csv("https://raw.githubusercontent.com/SallyChan23/Dashboard-Python-Analysis/main/dashboard/all_data.csv")
 all_df['dteday'] = pd.to_datetime(all_df['dteday'])
 
 st.sidebar.header('Filter Tanggal')
