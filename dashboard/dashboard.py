@@ -52,19 +52,25 @@ ax.legend(title='Tahun')
 
 st.pyplot(fig)
 
-st.subheader('Hubungan Suhu dengan Jumlah Penyewaan Sepeda')
+st.subheader('Hubungan Suhu dan Cuaca dengan Jumlah Penyewaan Sepeda')
 
 fig, ax = plt.subplots(figsize=(10, 6))
-ax.scatter(
+
+scatter = ax.scatter(
     filtered_df['temp_day'],
     filtered_df['total_count_day'],
+    c=filtered_df['weathersit_day'],  
+    cmap='coolwarm',  
     alpha=0.6,
-    color='green',
     edgecolors='black'
 )
 
-ax.set_title('Hubungan Suhu dengan Jumlah Penyewaan Sepeda', fontsize=15)
+cbar = plt.colorbar(scatter, ax=ax)
+cbar.set_label("Kondisi Cuaca (1: Cerah, 2: Mendung, 3: Hujan)", fontsize=12)
+
+ax.set_title('Hubungan Suhu dan Cuaca dengan Jumlah Penyewaan Sepeda', fontsize=15)
 ax.set_xlabel('Suhu', fontsize=12)
 ax.set_ylabel('Jumlah Penyewaan Sepeda', fontsize=12)
 
 st.pyplot(fig)
+
