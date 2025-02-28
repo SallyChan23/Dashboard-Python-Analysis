@@ -8,7 +8,7 @@ pip install numpy pandas scipy matplotlib seaborn jupyter streamlit babel
 ```
 ## Run steamlit app
 ```
-Streamlight run dashboard.py
+streamlit run dashboard/dashboard.py
 ```
 ## Online Deploy URL Link steamlit app
 ```
