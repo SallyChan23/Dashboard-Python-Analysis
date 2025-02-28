@@ -18,64 +18,59 @@ end_date = pd.to_datetime(st.sidebar.date_input('End Date', all_df['dteday'].max
 
 filtered_df = all_df[(all_df['dteday'] >= start_date) & (all_df['dteday'] <= end_date)]
 
+filtered_df_daily = filtered_df[['dteday', 'total_count_day', 'year_day', 'month_day', 'temp_day']].drop_duplicates(subset=['dteday']).reset_index(drop=True)
+
+filtered_df_daily['year_day'] = filtered_df_daily['year_day'].astype(int)
+filtered_df_daily['month_day'] = filtered_df_daily['month_day'].astype(int)
+
+filtered_df_daily.rename(columns={'year_hour': 'year_day', 'month_hour': 'month_day'}, inplace=True)
+
+monthly_df = filtered_df_daily.groupby(['year_day', 'month_day'])['total_count_day'].sum().reset_index()
+monthly_df['year_day'] = monthly_df['year_day'].map({0: 2011, 1: 2012})
+
+
 def calculate_metrics(df):
-    total_rentals = df['total_count_day'].sum()
-    average_rentals = df['total_count_day'].mean()
-    average_temperature = df['temp_day'].mean()
+    total_rentals = df['total_count_day'].sum()  # Pastikan ini pakai filtered_df_daily
+    average_rentals = df['total_count_day'].mean()  # Rata-rata dari dataset harian
+    average_temperature = df['temp_day'].mean()  # Pastikan ambil suhu dari data yang benar
     return total_rentals, average_rentals, average_temperature
 
-total_rentals, average_rentals, average_temperature = calculate_metrics(filtered_df)
+total_rentals, average_rentals, average_temperature = calculate_metrics(filtered_df_daily)  # Gunakan data yang sudah dibersihkan
 
-st.title('🚲 Statistik Penyewaan Sepeda')
 st.subheader('📊 Ringkasan Data')
 col1, col2, col3 = st.columns(3)
 col1.metric('Total Penyewaan', f"{int(total_rentals):,}")
 col2.metric('Rata-rata Penyewaan', f"{average_rentals:.2f}")
 col3.metric('Rata-rata Suhu', f"{average_temperature:.2f}°C")
 
-col1, col2 = st.columns(2)
-col1.metric('Jumlah baris di Dashboard:', filtered_df.groupby(['year_day', 'month_day']).size().shape[0])
-col2.metric('Total Penyewaan di Dashboard:', filtered_df['total_count_day'].sum())
-
 st.subheader('Tren Penyewaan Sepeda')
 
-# filtered_df.set_index('dteday', inplace=True)
-# monthly_df = filtered_df.resample('M')['total_count_day'].sum().reset_index()
-# monthly_df['year'] = monthly_df['dteday'].dt.year
-# monthly_df['month'] = monthly_df['dteday'].dt.month
-
-monthly_df = filtered_df.groupby(['year_day', 'month_day'])['total_count_day'].mean().reset_index()
-monthly_df['year_day'] = monthly_df['year_day'].map({0: 2011, 1: 2012}) 
-
+# Pertanyaan 1
 fig, ax = plt.subplots(figsize=(10, 6))
 
-# Plot tahun 2011
+# 2011
 ax.plot(
     monthly_df[monthly_df['year_day'] == 2011]['month_day'],
     monthly_df[monthly_df['year_day'] == 2011]['total_count_day'],
-    marker='o'
+    marker='o', color='orange', linewidth=2
 )
 
-# Plot tahun 2012
+# 2012
 ax.plot(
     monthly_df[monthly_df['year_day'] == 2012]['month_day'],
     monthly_df[monthly_df['year_day'] == 2012]['total_count_day'],
-    marker='o'
+    marker='o', color='blue', linewidth=2
 )
 
 ax.set_title('Tren Bulanan Penyewaan Sepeda per Tahun')
 ax.set_xlabel('Bulan')
 ax.set_ylabel('Jumlah Penyewaan')
-
-# Paksa format angka di sumbu Y biar sama seperti notebook
-ax.yaxis.set_major_formatter(ticker.StrMethodFormatter("{x:,.0f}"))
-
 ax.set_xticks(range(1, 13))
-ax.legend(title='Tahun')
+ax.legend(title='Tahun', labels=['2011', '2012'])
 
 st.pyplot(fig)
 
-
+# Pertanyaan 2
 st.subheader('Hubungan Suhu dan Cuaca dengan Jumlah Penyewaan Sepeda')
 
 fig, ax = plt.subplots(figsize=(10, 6))
