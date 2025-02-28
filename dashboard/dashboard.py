@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import matplotlib.ticker as ticker
 
 sns.set(style='dark')
 
@@ -32,25 +33,48 @@ col1.metric('Total Penyewaan', f"{int(total_rentals):,}")
 col2.metric('Rata-rata Penyewaan', f"{average_rentals:.2f}")
 col3.metric('Rata-rata Suhu', f"{average_temperature:.2f}°C")
 
+col1, col2 = st.columns(2)
+col1.metric('Jumlah baris di Dashboard:', filtered_df.groupby(['year_day', 'month_day']).size().shape[0])
+col2.metric('Total Penyewaan di Dashboard:', filtered_df['total_count_day'].sum())
+
 st.subheader('Tren Penyewaan Sepeda')
 
-filtered_df.set_index('dteday', inplace=True)
-monthly_df = filtered_df.resample('M')['total_count_day'].sum().reset_index()
-monthly_df['year'] = monthly_df['dteday'].dt.year
-monthly_df['month'] = monthly_df['dteday'].dt.month
+# filtered_df.set_index('dteday', inplace=True)
+# monthly_df = filtered_df.resample('M')['total_count_day'].sum().reset_index()
+# monthly_df['year'] = monthly_df['dteday'].dt.year
+# monthly_df['month'] = monthly_df['dteday'].dt.month
+
+monthly_df = filtered_df.groupby(['year_day', 'month_day'])['total_count_day'].mean().reset_index()
+monthly_df['year_day'] = monthly_df['year_day'].map({0: 2011, 1: 2012}) 
 
 fig, ax = plt.subplots(figsize=(10, 6))
-for year in monthly_df['year'].unique():
-    data = monthly_df[monthly_df['year'] == year]
-    ax.plot(data['month'], data['total_count_day'], marker='o', label=str(year))
 
-ax.set_title('Tren Bulanan Penyewaan Sepeda per Tahun', fontsize=15)
+# Plot tahun 2011
+ax.plot(
+    monthly_df[monthly_df['year_day'] == 2011]['month_day'],
+    monthly_df[monthly_df['year_day'] == 2011]['total_count_day'],
+    marker='o'
+)
+
+# Plot tahun 2012
+ax.plot(
+    monthly_df[monthly_df['year_day'] == 2012]['month_day'],
+    monthly_df[monthly_df['year_day'] == 2012]['total_count_day'],
+    marker='o'
+)
+
+ax.set_title('Tren Bulanan Penyewaan Sepeda per Tahun')
 ax.set_xlabel('Bulan')
 ax.set_ylabel('Jumlah Penyewaan')
+
+# Paksa format angka di sumbu Y biar sama seperti notebook
+ax.yaxis.set_major_formatter(ticker.StrMethodFormatter("{x:,.0f}"))
+
 ax.set_xticks(range(1, 13))
 ax.legend(title='Tahun')
 
 st.pyplot(fig)
+
 
 st.subheader('Hubungan Suhu dan Cuaca dengan Jumlah Penyewaan Sepeda')
 
